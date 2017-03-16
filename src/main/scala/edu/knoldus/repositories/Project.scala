@@ -1,6 +1,6 @@
 package edu.knoldus.repositories
 
-import edu.knoldus.connection.{DBComponent, H2DBComponent, MySqlComponent, PostgresComponent}
+import edu.knoldus.connection.{DBComponent, PostgresComponent}
 
 import scala.concurrent.Future
 
@@ -55,8 +55,8 @@ trait ProjectRepo extends ProjectTable {
   * deleting a record
   * */
 
-  def delete(name: String): Future[Int] = {
-    val query = projectTableQuery.filter(p => p.name === name)
+  def delete(id: Int): Future[Int] = {
+    val query = projectTableQuery.filter(p => p.projId === id)
     val action = query.delete
     db.run(action)
   }
@@ -84,7 +84,7 @@ trait ProjectRepo extends ProjectTable {
   * Retrieving all the records in the Table
   * */
 
-  def getAll : Future[List[Project]] = db.run{
+  def getAll: Future[List[Project]] = db.run {
     projectTableQuery.to[List].result
   }
 
@@ -105,32 +105,38 @@ trait ProjectRepo extends ProjectTable {
     (for {
       record <- projectTableQuery
       employee <- record.employeeProjectFK
-    }yield (employee, record)).to[List].result
+    } yield (employee, record)).to[List].result
   }
 
-  def getProjectBasedOnEmpName(name: String): Future[List[(String, String)]] = db.run{
+  /*
+  * Get Project names for the given Employee
+  * */
+
+  def getProjectBasedOnEmpName(name: String): Future[List[(String, String)]] = db.run {
     (for {
-      (e,p) <- employeeTableQuery join projectTableQuery on (_.id === _.empId) if e.name === name
-    }yield (e.name, p.name)).to[List].result
+      (e, p) <- employeeTableQuery join projectTableQuery on (_.id === _.empId) if e.name === name
+    } yield (e.name, p.name)).to[List].result
   }
 
-  /*def getEmployeeWithMaxExp = {
-    val exps = employeeTableQuery.map(e=>(e.experience,e.name))
-    val empRecord = exps.map(_._1).max
-    empRecord
-  }*/
+  /*
+  * Get average team size of the projects
+  * */
 
-  def getAvgTeamSize = {
+  def getAvgTeamSize: Future[Option[Int]] = db.run {
     val projects = projectTableQuery.map(_.teamSize)
-    projects.avg
+    projects.avg.result
   }
 
-  def createProject = {
-    //sqlu"insert into experienced_employee values(4,'Nikita',3.5)",
-    sqlu"insert into project values(3,'Carbon Data',2,6,'Bhavya')"
+  /*
+  * Insert project record using pain sql
+  * */
+
+  def insertProject: Future[Int] = db.run {
+    sqlu"insert into project values(6,'EY',3,6,'Himanshu')"
   }
+
 }
 
-object ProjectRepo extends ProjectRepo with H2DBComponent
+object ProjectRepo extends ProjectRepo with PostgresComponent
 
 

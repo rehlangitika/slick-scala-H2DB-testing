@@ -7,7 +7,7 @@ import scala.concurrent.duration.Duration
 
 class DependentSpec extends AsyncFunSuite with DependentRepo with H2DBComponent  {
 
-  test("1:should insert a record into the database") {
+  test("should insert a record into the database") {
     val res = insert(Dependent(2,2,"Manvi","wife",Some(24)))
     res.map { x => assert(x == 1) }
   }
@@ -52,8 +52,8 @@ class DependentSpec extends AsyncFunSuite with DependentRepo with H2DBComponent 
     assert(Await.result(list, Duration.Inf) == List(("Gitika","Kamal"), ("Gitika","Amit")))
   }
 
-  test("should create a dependent using plain sql") {
-    val res = createDependent
+  test("should insert a dependent using plain sql") {
+    val res = insertDependent
     res.map { x => assert(x==1)}
   }
 

@@ -109,25 +109,38 @@ trait DependentRepo extends DependentTable {
     } yield (employee, record)).to[List].result
   }
 
+  /*
+  * Retrieving dependent and employee based on experience
+  * */
+
   def getDependentBasedOnEmpExp(experience: Double): Future[List[(String, String)]] = db.run {
     (for {
       (e, d) <- employeeTableQuery join dependentTableQuery on (_.id === _.empId) if e.experience === experience
     } yield (e.name, d.name)).to[List].result
   }
 
+  /*
+  * */
   def getLastId(dependent: Dependent): Future[Int] = db.run {
     dependentTableAutoInc += dependent
   }
+
+  /*
+  * Get Average age of dependents
+  * */
 
   def getAvgAge = {
     val dep = dependentTableQuery.map(_.age)
     dep.avg
   }
 
-  def createDependent: Future[Int] = db.run{
+  /*
+  * insert dependent record using pain sql
+  * */
+
+  def insertDependent: Future[Int] = db.run {
     sqlu"insert into dependent values(5,2,'Raman','sister',23)"
   }
-
 
 }
 

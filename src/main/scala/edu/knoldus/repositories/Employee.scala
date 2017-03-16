@@ -93,23 +93,26 @@ trait EmployeeRepo extends EmployeeTable {
     db.run(query)
   }
 
-  def getObject(employee: Employee): Future[Int] = db.run {
-    //(employeeTableQuery returning employeeTableQuery.map(_.id)
-    //into ((employee,id) => employee.copy(id = Some(id)))
-    //)+=Employee(3,"Nikita",3)
+  def nextId(employee: Employee): Future[Int] = db.run {
     employeeTableAutoInc += employee
   }
 
-  def getAvgEmpExp = {
+  /*
+  * Get Average employee experience
+  * */
+
+  def getAvgEmpExp: Future[Option[Double]] = db.run {
     val exps = employeeTableQuery.map(_.experience)
-    exps.avg
+    exps.max.result
   }
 
-  def createEmployee: DBIO[Int] = {
-    sqlu"insert into experienced_employee values(4,'Nikita',3.5)"
-    //sqlu"insert into experienced_employee values(5,Gunjan,3.7)"
-  }
+  /*
+  * inserting an employee using plain sql
+  * */
 
+  def insertEmployee: Future[Int] = db.run {
+    sqlu"insert into experienced_employee values(6,'Nikita',3.5)"
+  }
 
 }
 
